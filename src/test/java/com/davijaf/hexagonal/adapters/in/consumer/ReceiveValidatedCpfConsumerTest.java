@@ -12,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -87,6 +86,6 @@ class ReceiveValidatedCpfConsumerTest {
 
         receiveValidatedCpfConsumer.receive(customerMessage);
 
-        verify(updateCustomerInputPort).update(eq(customer), eq(expectedZipCode));
+        verify(updateCustomerInputPort).update(customer, expectedZipCode);
     }
 }
