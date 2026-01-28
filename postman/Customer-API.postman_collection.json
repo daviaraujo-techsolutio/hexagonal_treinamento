@@ -1,0 +1,645 @@
+{
+	"info": {
+		"_postman_id": "hexagonal-customer-api",
+		"name": "Customer API - Hexagonal Architecture",
+		"description": "API de Cliente (CRUD) implementada usando Arquitetura Hexagonal (Ports and Adapters).\n\n## Tecnologias\n- Java 17 + Spring Boot 3.2\n- MongoDB\n- Apache Kafka\n- OpenFeign\n\n## Pré-requisitos\n1. Docker: `docker-compose up -d`\n2. WireMock: `java -jar wiremock.jar --port 8082`\n3. Aplicação: `./gradlew bootRun`",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "customerId",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Customers",
+			"description": "Operações CRUD de clientes",
+			"item": [
+				{
+					"name": "Create Customer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response time is less than 2000ms', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"João Silva\",\n    \"cpf\": \"12345678900\",\n    \"zipCode\": \"38400000\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customers",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customers"]
+						},
+						"description": "Cria um novo cliente.\n\n**Campos obrigatórios:**\n- `name`: Nome do cliente\n- `cpf`: CPF do cliente (11 dígitos)\n- `zipCode`: CEP para buscar endereço\n\n**CEPs válidos (WireMock):**\n- `38400000`: Uberlândia/MG\n- `38400001`: São Paulo/SP"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"João Silva\",\n    \"cpf\": \"12345678900\",\n    \"zipCode\": \"38400000\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/v1/customers",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "v1", "customers"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Get Customer by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has required fields', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('name');",
+									"    pm.expect(jsonData).to.have.property('cpf');",
+									"    pm.expect(jsonData).to.have.property('address');",
+									"    pm.expect(jsonData).to.have.property('isValidCpf');",
+									"});",
+									"",
+									"pm.test('Address has required fields', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.address).to.have.property('street');",
+									"    pm.expect(jsonData.address).to.have.property('city');",
+									"    pm.expect(jsonData.address).to.have.property('state');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customers/{{customerId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customers", "{{customerId}}"]
+						},
+						"description": "Busca um cliente pelo ID.\n\n**Retorna:**\n- `name`: Nome do cliente\n- `cpf`: CPF do cliente\n- `address`: Endereço (street, city, state)\n- `isValidCpf`: Se o CPF foi validado via Kafka"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/v1/customers/123",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "v1", "customers", "123"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"name\": \"João Silva\",\n    \"cpf\": \"12345678900\",\n    \"address\": {\n        \"street\": \"Rua Hexagonal\",\n        \"city\": \"Uberlândia\",\n        \"state\": \"Minas Gerais\"\n    },\n    \"isValidCpf\": false\n}"
+						},
+						{
+							"name": "Not Found",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/v1/customers/999",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "v1", "customers", "999"]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"timestamp\": 1706396000000,\n    \"status\": 404,\n    \"message\": \"Object with id 999 not found\",\n    \"path\": \"/api/v1/customers/999\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Update Customer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 204', function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"João Silva Atualizado\",\n    \"cpf\": \"12345678900\",\n    \"zipCode\": \"38400001\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customers/{{customerId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customers", "{{customerId}}"]
+						},
+						"description": "Atualiza um cliente existente.\n\n**Campos obrigatórios:**\n- `name`: Nome do cliente\n- `cpf`: CPF do cliente\n- `zipCode`: Novo CEP"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"João Silva Atualizado\",\n    \"cpf\": \"12345678900\",\n    \"zipCode\": \"38400001\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/v1/customers/123",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "v1", "customers", "123"]
+								}
+							},
+							"status": "No Content",
+							"code": 204,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Delete Customer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 204', function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customers/{{customerId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customers", "{{customerId}}"]
+						},
+						"description": "Remove um cliente pelo ID."
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/v1/customers/123",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "v1", "customers", "123"]
+								}
+							},
+							"status": "No Content",
+							"code": 204,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"body": ""
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Validation Tests",
+			"description": "Testes de validação de campos",
+			"item": [
+				{
+					"name": "Create Customer - Empty Name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 400', function () {",
+									"    pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"\",\n    \"cpf\": \"12345678900\",\n    \"zipCode\": \"38400000\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customers",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customers"]
+						},
+						"description": "Testa validação de nome vazio."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Customer - Empty CPF",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 400', function () {",
+									"    pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"João Silva\",\n    \"cpf\": \"\",\n    \"zipCode\": \"38400000\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customers",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customers"]
+						},
+						"description": "Testa validação de CPF vazio."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Customer - Empty ZipCode",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 400', function () {",
+									"    pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"João Silva\",\n    \"cpf\": \"12345678900\",\n    \"zipCode\": \"\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customers",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customers"]
+						},
+						"description": "Testa validação de CEP vazio."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Customer - Not Found",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 404', function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test('Response has error fields', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('timestamp');",
+									"    pm.expect(jsonData).to.have.property('status');",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    pm.expect(jsonData).to.have.property('path');",
+									"});",
+									"",
+									"pm.test('Status is 404', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.status).to.eql(404);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customers/non-existent-id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customers", "non-existent-id"]
+						},
+						"description": "Testa resposta 404 para cliente não encontrado."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Integration Flow",
+			"description": "Fluxo completo de integração: criar, buscar, atualizar, deletar",
+			"item": [
+				{
+					"name": "1. Create Customer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Maria Santos\",\n    \"cpf\": \"98765432100\",\n    \"zipCode\": \"38400000\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customers",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customers"]
+						},
+						"description": "Passo 1: Criar cliente"
+					},
+					"response": []
+				},
+				{
+					"name": "2. Get Customer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Customer name is correct', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.name).to.eql('Maria Santos');",
+									"});",
+									"",
+									"pm.test('Address is from Uberlândia', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.address.city).to.eql('Uberlândia');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customers/{{customerId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customers", "{{customerId}}"]
+						},
+						"description": "Passo 2: Buscar cliente criado (preencha customerId)"
+					},
+					"response": []
+				},
+				{
+					"name": "3. Update Customer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 204', function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Maria Santos Silva\",\n    \"cpf\": \"98765432100\",\n    \"zipCode\": \"38400001\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customers/{{customerId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customers", "{{customerId}}"]
+						},
+						"description": "Passo 3: Atualizar cliente (muda para São Paulo)"
+					},
+					"response": []
+				},
+				{
+					"name": "4. Verify Update",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Customer name was updated', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.name).to.eql('Maria Santos Silva');",
+									"});",
+									"",
+									"pm.test('Address was updated to São Paulo', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.address.city).to.eql('São Paulo');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customers/{{customerId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customers", "{{customerId}}"]
+						},
+						"description": "Passo 4: Verificar atualização"
+					},
+					"response": []
+				},
+				{
+					"name": "5. Delete Customer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 204', function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customers/{{customerId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customers", "{{customerId}}"]
+						},
+						"description": "Passo 5: Deletar cliente"
+					},
+					"response": []
+				},
+				{
+					"name": "6. Verify Deletion",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 404', function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test('Customer not found message', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.include('not found');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customers/{{customerId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customers", "{{customerId}}"]
+						},
+						"description": "Passo 6: Verificar que cliente foi deletado (deve retornar 404)"
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
