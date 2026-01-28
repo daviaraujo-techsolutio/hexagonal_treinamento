@@ -3,11 +3,13 @@ plugins {
     id 'org.springframework.boot' version '3.2.0'
     id 'io.spring.dependency-management' version '1.1.4'
     id "org.sonarqube" version "5.0.0.4638"
+    id 'jacoco'
 }
 
 sonar {
   properties {
     property "sonar.projectKey", "daviaraujo-techsolutio_hexagonal_treinamento_AZwEgHrvcbuphuw0hTXh"
+    property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
   }
 }
 
@@ -68,6 +70,30 @@ dependencyManagement {
     }
 }
 
+// JaCoCo Configuration
+jacoco {
+    toolVersion = "0.8.11"
+}
+
 tasks.named('test') {
     useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.5
+            }
+        }
+    }
 }
