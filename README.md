@@ -15,8 +15,34 @@ API de Cliente (CRUD) implementada usando Arquitetura Hexagonal (Ports and Adapt
 | MapStruct | 1.5.5 | Mapeamento de objetos |
 | Lombok | - | Reducao de boilerplate |
 | ArchUnit | 1.2.1 | Testes de arquitetura |
+| JaCoCo | 0.8.11 | Cobertura de codigo |
 | JUnit 5 | - | Testes unitarios |
+| SonarQube | 9.9.8 | Analise de qualidade |
 | Docker | - | Containerizacao |
+
+## Qualidade de Codigo
+
+O projeto utiliza SonarQube para analise continua de qualidade e JaCoCo para cobertura de testes.
+
+### Metricas
+
+| Metrica | Status |
+|---------|--------|
+| Quality Gate | Passed |
+| Bugs | 0 |
+| Vulnerabilities | 0 |
+| Code Smells | 0 |
+| Coverage | ~50% |
+| Duplications | 0.0% |
+
+### Pipeline CI/CD
+
+O projeto utiliza GitHub Actions para integracao continua:
+
+1. **Build** - Compila o projeto
+2. **Test** - Executa testes unitarios e de integracao
+3. **JaCoCo** - Gera relatorio de cobertura
+4. **SonarQube** - Analise estatica de codigo
 
 ## Arquitetura Hexagonal
 
@@ -224,31 +250,108 @@ Importe a collection para testar a API:
 ./gradlew test
 ```
 
-### Relatorio HTML
+### Executar com cobertura
+
+```bash
+./gradlew test jacocoTestReport
+```
+
+### Relatorios
+
+| Relatorio | Caminho |
+|-----------|---------|
+| Testes | `build/reports/tests/test/index.html` |
+| Cobertura | `build/reports/jacoco/test/html/index.html` |
+
+### Estrutura de Testes
 
 ```
-build/reports/tests/test/index.html
+src/test/java/com/davijaf/hexagonal/
+├── HexagonalApplicationTests.java
+├── adapters/
+│   ├── in/
+│   │   ├── consumer/
+│   │   │   ├── ReceiveValidatedCpfConsumerTest.java
+│   │   │   └── message/
+│   │   │       └── CustomerMessageTest.java
+│   │   └── controller/
+│   │       └── CustomerControllerTest.java
+│   └── out/
+│       ├── client/
+│       │   ├── FindAddressByZipCodeAdapterTest.java
+│       │   └── response/
+│       │       └── AddressResponseTest.java
+│       ├── producer/
+│       │   └── SendCpfForValidationAdapterTest.java
+│       └── repository/
+│           ├── DeleteCustomerByIdAdapterTest.java
+│           ├── FindCustomerByIdAdapterTest.java
+│           ├── InsertCustomerAdapterTest.java
+│           ├── UpdateCustomerAdapterTest.java
+│           └── entity/
+│               ├── AddressEntityTest.java
+│               └── CustomerEntityTest.java
+├── application/
+│   └── core/
+│       ├── domain/
+│       │   ├── AddressTest.java
+│       │   └── CustomerTest.java
+│       └── usecase/
+│           ├── DeleteCustomerByIdUseCaseTest.java
+│           ├── FindCustomerByIdUseCaseTest.java
+│           ├── InsertCustomerUseCaseTest.java
+│           └── UpdateCustomerUseCaseTest.java
+└── architecture/
+    ├── DomainComponentsTest.java
+    ├── GeneralCodingRulesTest.java
+    ├── LayerArchitectureTest.java
+    ├── NamingConventionTest.java
+    ├── SlicesTest.java
+    └── SpringCodingRulesTest.java
 ```
 
 ### Cobertura de Testes
 
-| Categoria | Testes | Descricao |
-|-----------|--------|-----------|
-| Arquitetura | 32 | ArchUnit (camadas, nomenclatura, sufixos) |
-| Dominio | 12 | Customer e Address |
-| Use Cases | 15 | CRUD use cases |
-| Adapters | 5 | Repository adapters |
-| Controller | 8 | REST API com MockMvc |
+| Categoria | Arquivos | Descricao |
+|-----------|----------|-----------|
+| Arquitetura | 6 | ArchUnit (camadas, nomenclatura, slices, regras) |
+| Dominio | 2 | Customer e Address |
+| Use Cases | 4 | CRUD use cases |
+| Adapters In | 3 | Controller, Consumer, DTOs |
+| Adapters Out | 8 | Repository, Client, Producer, Entities |
 | Aplicacao | 1 | Context loads |
-| **Total** | **73** | |
 
-### Testes de Arquitetura
+### Testes de Arquitetura (ArchUnit)
 
-O projeto utiliza ArchUnit para garantir:
+O projeto utiliza ArchUnit para garantir a integridade da arquitetura hexagonal:
 
-- **Regras de camadas**: Adapters nao acessam outros adapters diretamente
-- **Convencoes de nomenclatura**: Classes com sufixos corretos nos pacotes corretos
-- **Sufixos obrigatorios**: Ex: classes em `usecase/` devem terminar com `UseCase`
+| Arquivo | Descricao |
+|---------|-----------|
+| `LayerArchitectureTest` | Valida dependencias entre camadas |
+| `DomainComponentsTest` | Garante que domain nao depende de adapters/frameworks |
+| `SlicesTest` | Verifica ausencia de ciclos e independencia de adapters |
+| `GeneralCodingRulesTest` | Regras gerais (sem System.out, excecoes genericas, etc) |
+| `NamingConventionTest` | Convencoes de nomenclatura |
+| `SpringCodingRulesTest` | Boas praticas Spring (desabilitado como TODO) |
+
+#### Regras Validadas
+
+- **Camadas**: Adapters nao acessam outros adapters diretamente
+- **Domain**: Nao depende de Spring, adapters ou config
+- **Use Cases**: Nao dependem de adapters
+- **Ports**: Nao dependem de adapters
+- **Slices**: Sem dependencias ciclicas
+- **Convencoes**: Classes com sufixos corretos nos pacotes corretos
+
+## Analise SonarQube
+
+### Executar analise local
+
+```bash
+./gradlew test jacocoTestReport sonar \
+  -Dsonar.host.url=http://localhost:9000 \
+  -Dsonar.token=SEU_TOKEN
+```
 
 ## Configuracao
 
@@ -270,6 +373,40 @@ davijaf:
   client:
     address:
       url: http://localhost:8082/addresses
+```
+
+### build.gradle - SonarQube e JaCoCo
+
+```groovy
+plugins {
+    id 'jacoco'
+    id "org.sonarqube" version "5.0.0.4638"
+}
+
+sonar {
+    properties {
+        property "sonar.projectKey", "seu-project-key"
+        property "sonar.coverage.jacoco.xmlReportPaths",
+                 "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
 ```
 
 ### Docker Compose
@@ -297,7 +434,7 @@ docker exec -it hexagonal-kafka-1 kafka-console-producer.sh \
   --topic tp-cpf-validated
 
 # Digite a mensagem JSON:
-{"id":"<customer-id>","name":"Joao","cpf":"12345678900","isValidCpf":true}
+{"id":"<customer-id>","name":"Joao","cpf":"12345678900","isValidCpf":true,"zipCode":"38400000"}
 ```
 
 ## Build
@@ -314,12 +451,12 @@ docker exec -it hexagonal-kafka-1 kafka-console-producer.sh \
 ./gradlew bootJar
 ```
 
-O JAR sera gerado em `build/libs/hexagonal-0.0.1-SNAPSHOT.jar`
+O JAR sera gerado em `build/libs/hexagonal-1.0.0.jar`
 
 ### Executar JAR
 
 ```bash
-java -jar build/libs/hexagonal-0.0.1-SNAPSHOT.jar
+java -jar build/libs/hexagonal-1.0.0.jar
 ```
 
 ## Vantagens da Arquitetura Hexagonal
@@ -329,11 +466,22 @@ java -jar build/libs/hexagonal-0.0.1-SNAPSHOT.jar
 3. **Testabilidade**: Core isolado, facil de testar
 4. **Principios SOLID**: SRP e ISP aplicados naturalmente
 5. **Manutencao**: Mudancas isoladas por camada
+6. **Qualidade**: Testes de arquitetura garantem integridade
 
 ## Desvantagens
 
 1. **Quantidade de codigo**: Mais classes e interfaces que MVC tradicional
 2. **Curva de aprendizado**: Requer entendimento dos conceitos
+
+### Padrao de Commits
+
+Utilizamos [Conventional Commits](https://www.conventionalcommits.org/):
+
+- `feat:` Nova funcionalidade
+- `fix:` Correcao de bug
+- `docs:` Documentacao
+- `test:` Testes
+- `refactor:` Refatoracao
 
 ## Licenca
 
