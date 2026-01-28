@@ -1,6 +1,5 @@
 package com.davijaf.hexagonal.adapters.out.repository;
 
-import com.davijaf.hexagonal.adapters.out.repository.entity.CustomerEntity;
 import com.davijaf.hexagonal.adapters.out.repository.mapper.CustomerEntityMapper;
 import com.davijaf.hexagonal.application.core.domain.Customer;
 import com.davijaf.hexagonal.application.ports.out.InsertCustomerOutputPort;
