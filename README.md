@@ -4,29 +4,29 @@ API de Cliente (CRUD) implementada usando Arquitetura Hexagonal (Ports and Adapt
 
 ## Tecnologias
 
-| Tecnologia | Versao | Descricao |
+| Tecnologia | Versão | Descrição |
 |------------|--------|-----------|
 | Java | 17 | Linguagem principal |
 | Spring Boot | 3.2 | Framework web |
-| Gradle | 8.5 | Gerenciador de dependencias |
+| Gradle | 8.5 | Gerenciador de dependências |
 | MongoDB | 7.0 | Banco de dados NoSQL |
-| Apache Kafka | Latest | Mensageria assincrona |
+| Apache Kafka | Latest | Mensageria assíncrona |
 | OpenFeign | - | Cliente HTTP declarativo |
 | MapStruct | 1.5.5 | Mapeamento de objetos |
-| Lombok | - | Reducao de boilerplate |
+| Lombok | - | Redução de boilerplate |
 | ArchUnit | 1.2.1 | Testes de arquitetura |
-| JaCoCo | 0.8.11 | Cobertura de codigo |
-| JUnit 5 | - | Testes unitarios |
-| SonarQube | 9.9.8 | Analise de qualidade |
-| Docker | - | Containerizacao |
+| JaCoCo | 0.8.11 | Cobertura de código |
+| JUnit 5 | - | Testes unitários |
+| SonarQube | 9.9.8 | Análise de qualidade |
+| Docker | - | Containerização |
 
-## Qualidade de Codigo
+## Qualidade de Código
 
-O projeto utiliza SonarQube para analise continua de qualidade e JaCoCo para cobertura de testes, com configuracoes customizadas para arquitetura hexagonal.
+O projeto utiliza SonarQube para análise contínua de qualidade e JaCoCo para cobertura de testes, com configurações customizadas para arquitetura hexagonal.
 
-### Metricas Atuais
+### Métricas Atuais
 
-| Metrica | Valor | Status |
+| Métrica | Valor | Status |
 |---------|-------|--------|
 | Quality Gate | Hexagonal Clean Code | Passed |
 | Coverage | 76.1% | A |
@@ -41,94 +41,94 @@ O projeto utiliza SonarQube para analise continua de qualidade e JaCoCo para cob
 
 Quality Gate customizado para projetos com arquitetura hexagonal:
 
-| Condicao | Threshold | Descricao |
+| Condição | Threshold | Descrição |
 |----------|-----------|-----------|
-| Coverage | >= 70% | Cobertura minima de codigo |
-| Duplicated Lines | <= 3% | Maximo de duplicacao |
+| Coverage | >= 70% | Cobertura mínima de código |
+| Duplicated Lines | <= 3% | Máximo de duplicação |
 | Maintainability Rating | A | Nota de manutenibilidade |
 | Reliability Rating | A | Nota de confiabilidade |
-| Security Rating | A | Nota de seguranca |
+| Security Rating | A | Nota de segurança |
 | Security Hotspots Reviewed | 100% | Hotspots revisados |
 | Blocker Issues | 0 | Nenhum issue blocker |
-| Critical Issues | 0 | Nenhum issue critico |
+| Critical Issues | 0 | Nenhum issue crítico |
 
 ### Quality Profile - Hexagonal Spring Boot
 
-Quality Profile customizado com 487 regras ativas, incluindo regras especificas para:
+Quality Profile customizado com 487 regras ativas, incluindo regras específicas para:
 
-- **Spring Framework**: Injecao de dependencia, Controllers, Components
+- **Spring Framework**: Injeção de dependência, Controllers, Components
 - **Bean Validation**: JSR 380
-- **Exception Handling**: Preservacao de excecoes originais
-- **Security**: Regras OWASP para aplicacoes web
+- **Exception Handling**: Preservação de exceções originais
+- **Security**: Regras OWASP para aplicações web
 
 ### Cobertura por Camada (JaCoCo)
 
-Configuracao de cobertura diferenciada por camada da arquitetura:
+Configuração de cobertura diferenciada por camada da arquitetura:
 
-| Camada | Cobertura Minima | Justificativa |
+| Camada | Cobertura Mínima | Justificativa |
 |--------|------------------|---------------|
-| Use Cases | 80% | Core da aplicacao, regras de negocio |
+| Use Cases | 80% | Core da aplicação, regras de negócio |
 | Domain | 80% | Entidades e objetos de valor |
 | Adapters In | 60% | Controllers e Consumers |
 | Adapters Out | 60% | Repositories, Clients, Producers |
-| Global | 60% | Minimo geral do projeto |
+| Global | 60% | Mínimo geral do projeto |
 
-### Exclusoes Inteligentes
+### Exclusões Inteligentes
 
-Classes excluidas da analise de cobertura (nao afetam metricas):
+Classes excluídas da análise de cobertura (não afetam métricas):
 
-| Tipo | Padrao | Motivo |
+| Tipo | Padrão | Motivo |
 |------|--------|--------|
-| Configuracoes | `**/config/**` | Beans e setup |
-| Entidades | `**/entity/**` | POJOs sem logica |
-| DTOs Request | `**/request/**` | Objetos de transferencia |
-| DTOs Response | `**/response/**` | Objetos de transferencia |
+| Configurações | `**/config/**` | Beans e setup |
+| Entidades | `**/entity/**` | POJOs sem lógica |
+| DTOs Request | `**/request/**` | Objetos de transferência |
+| DTOs Response | `**/response/**` | Objetos de transferência |
 | Messages | `**/message/**` | DTOs Kafka |
 | Mappers | `**/mapper/**` | Gerados por MapStruct |
-| Exceptions | `**/exception/**` | Classes de excecao |
+| Exceptions | `**/exception/**` | Classes de exceção |
 | Application | `**/*Application.java` | Classe main |
 
 ### Pipeline CI/CD
 
-O projeto utiliza GitHub Actions para integracao continua:
+O projeto utiliza GitHub Actions para integração contínua:
 
 1. **Build** - Compila o projeto
-2. **Test** - Executa testes unitarios e de integracao
-3. **JaCoCo** - Gera relatorio de cobertura
-4. **SonarQube** - Analise estatica de codigo
+2. **Test** - Executa testes unitários e de integração
+3. **JaCoCo** - Gera relatório de cobertura
+4. **SonarQube** - Análise estática de código
 
 ## Arquitetura Hexagonal
 
 ### Conceitos
 
-A Arquitetura Hexagonal (ou Ports and Adapters) isola a logica de negocio do mundo externo:
+A Arquitetura Hexagonal (ou Ports and Adapters) isola a lógica de negócio do mundo externo:
 
-- **Core (Domain)**: Regras de negocio isoladas, sem dependencias externas
+- **Core (Domain)**: Regras de negócio isoladas, sem dependências externas
 - **Input Ports**: Interfaces que definem como acessar o core
 - **Output Ports**: Interfaces que definem como o core acessa recursos externos
-- **Adapters**: Implementacoes concretas das portas
+- **Adapters**: Implementações concretas das portas
 
 ### Estrutura
 
 ```
 src/main/java/com/davijaf/hexagonal/
 ├── HexagonalApplication.java
-├── config/                          # Configuracoes e beans
+├── config/                          # Configurações e beans
 ├── application/
 │   ├── core/
 │   │   ├── domain/                  # Entidades (Customer, Address)
 │   │   ├── exceptions/              # Exceptions customizadas
-│   │   └── usecase/                 # Regras de negocio
+│   │   └── usecase/                 # Regras de negócio
 │   └── ports/
 │       ├── in/                      # Portas de entrada
-│       └── out/                     # Portas de saida
+│       └── out/                     # Portas de saída
 └── adapters/
     ├── in/
     │   ├── controller/              # REST API
     │   │   ├── handler/             # Exception handlers
     │   │   ├── mapper/              # Request/Response mappers
     │   │   ├── request/             # DTOs de entrada
-    │   │   └── response/            # DTOs de saida
+    │   │   └── response/            # DTOs de saída
     │   └── consumer/                # Kafka consumers
     └── out/
         ├── repository/              # MongoDB
@@ -140,21 +140,21 @@ src/main/java/com/davijaf/hexagonal/
 
 ### Camadas
 
-| Camada | Pacote | Descricao |
+| Camada | Pacote | Descrição |
 |--------|--------|-----------|
 | Domain | `application.core.domain` | Entidades e objetos de valor |
 | Exceptions | `application.core.exceptions` | Exceptions do core |
-| Use Cases | `application.core.usecase` | Regras de negocio |
+| Use Cases | `application.core.usecase` | Regras de negócio |
 | Input Ports | `application.ports.in` | Interfaces de entrada |
-| Output Ports | `application.ports.out` | Interfaces de saida |
+| Output Ports | `application.ports.out` | Interfaces de saída |
 | Controller | `adapters.in.controller` | REST API |
 | Handler | `adapters.in.controller.handler` | Exception handlers |
 | Consumer | `adapters.in.consumer` | Kafka consumers |
-| Repository | `adapters.out.repository` | Persistencia MongoDB |
+| Repository | `adapters.out.repository` | Persistência MongoDB |
 | Client | `adapters.out.client` | Cliente HTTP externo |
 | Producer | `adapters.out.producer` | Kafka producers |
 
-## Fluxo da Aplicacao
+## Fluxo da Aplicação
 
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
@@ -171,16 +171,16 @@ src/main/java/com/davijaf/hexagonal/
             └───────────────┘         └───────────────┘         └───────────────┘
 ```
 
-1. Receber requisicao de cadastro de cliente (REST)
-2. Buscar endereco via CEP (API externa via WireMock)
+1. Receber requisição de cadastro de cliente (REST)
+2. Buscar endereço via CEP (API externa via WireMock)
 3. Salvar cliente no MongoDB
-4. Publicar CPF na fila Kafka para validacao
-5. Consumir resultado da validacao de outra fila Kafka
+4. Publicar CPF na fila Kafka para validação
+5. Consumir resultado da validação de outra fila Kafka
 6. Atualizar status do cliente no MongoDB
 
 ## Quick Start
 
-### Pre-requisitos
+### Pré-requisitos
 
 - Java 17+
 - Docker e Docker Compose
@@ -198,27 +198,27 @@ Isso inicia:
 - Zookeeper (porta 2181)
 - Kafka (porta 9092)
 
-### 2. Subir WireMock (mock da API de endereco)
+### 2. Subir WireMock (mock da API de endereço)
 
 ```bash
-# Baixar WireMock (se necessario)
+# Baixar WireMock (se necessário)
 curl -o wiremock.jar https://repo1.maven.org/maven2/org/wiremock/wiremock-standalone/3.3.1/wiremock-standalone-3.3.1.jar
 
 # Executar
 java -jar wiremock.jar --port 8082 --root-dir wiremock
 ```
 
-### 3. Executar a aplicacao
+### 3. Executar a aplicação
 
 ```bash
 ./gradlew bootRun
 ```
 
-A API estara disponivel em `http://localhost:8080`
+A API estará disponível em `http://localhost:8080`
 
 ## API Endpoints
 
-| Metodo | Endpoint | Descricao | Status |
+| Método | Endpoint | Descrição | Status |
 |--------|----------|-----------|--------|
 | POST | `/api/v1/customers` | Criar cliente | 200 |
 | GET | `/api/v1/customers/{id}` | Buscar cliente | 200 / 404 |
@@ -233,7 +233,7 @@ A API estara disponivel em `http://localhost:8080`
 curl -X POST http://localhost:8080/api/v1/customers \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "Joao Silva",
+    "name": "João Silva",
     "cpf": "12345678900",
     "zipCode": "38400000"
   }'
@@ -248,11 +248,11 @@ curl http://localhost:8080/api/v1/customers/{id}
 Resposta:
 ```json
 {
-  "name": "Joao Silva",
+  "name": "João Silva",
   "cpf": "12345678900",
   "address": {
     "street": "Rua Hexagonal",
-    "city": "Uberlandia",
+    "city": "Uberlândia",
     "state": "Minas Gerais"
   },
   "isValidCpf": false
@@ -270,12 +270,12 @@ Resposta:
 }
 ```
 
-### CEPs Validos (WireMock)
+### CEPs Válidos (WireMock)
 
 | CEP | Cidade | Estado |
 |-----|--------|--------|
-| 38400000 | Uberlandia | Minas Gerais |
-| 38400001 | Sao Paulo | Sao Paulo |
+| 38400000 | Uberlândia | Minas Gerais |
+| 38400001 | São Paulo | São Paulo |
 
 ## Postman Collection
 
@@ -287,12 +287,12 @@ Importe a collection para testar a API:
    - `postman/Customer-API.postman_collection.json`
    - `postman/Local.postman_environment.json`
 
-### Conteudo
+### Conteúdo
 
-| Pasta | Requests | Descricao |
+| Pasta | Requests | Descrição |
 |-------|----------|-----------|
 | Customers | 4 | CRUD completo |
-| Validation Tests | 4 | Testes de validacao |
+| Validation Tests | 4 | Testes de validação |
 | Integration Flow | 6 | Fluxo completo |
 
 ## Testes
@@ -309,9 +309,9 @@ Importe a collection para testar a API:
 ./gradlew test jacocoTestReport
 ```
 
-### Relatorios
+### Relatórios
 
-| Relatorio | Caminho |
+| Relatório | Caminho |
 |-----------|---------|
 | Testes | `build/reports/tests/test/index.html` |
 | Cobertura | `build/reports/jacoco/test/html/index.html` |
@@ -365,40 +365,40 @@ src/test/java/com/davijaf/hexagonal/
 
 ### Cobertura de Testes
 
-| Categoria | Arquivos | Descricao |
+| Categoria | Arquivos | Descrição |
 |-----------|----------|-----------|
 | Arquitetura | 6 | ArchUnit (camadas, nomenclatura, slices, regras) |
-| Dominio | 2 | Customer e Address |
+| Domínio | 2 | Customer e Address |
 | Use Cases | 4 | CRUD use cases |
 | Adapters In | 3 | Controller, Consumer, DTOs |
 | Adapters Out | 8 | Repository, Client, Producer, Entities |
-| Aplicacao | 1 | Context loads |
+| Aplicação | 1 | Context loads |
 
 ### Testes de Arquitetura (ArchUnit)
 
 O projeto utiliza ArchUnit para garantir a integridade da arquitetura hexagonal:
 
-| Arquivo | Descricao |
+| Arquivo | Descrição |
 |---------|-----------|
-| `LayerArchitectureTest` | Valida dependencias entre camadas |
-| `DomainComponentsTest` | Garante que domain nao depende de adapters/frameworks |
-| `SlicesTest` | Verifica ausencia de ciclos e independencia de adapters |
-| `GeneralCodingRulesTest` | Regras gerais (sem System.out, excecoes genericas, etc) |
-| `NamingConventionTest` | Convencoes de nomenclatura |
-| `SpringCodingRulesTest` | Boas praticas Spring (desabilitado como TODO) |
+| `LayerArchitectureTest` | Valida dependências entre camadas |
+| `DomainComponentsTest` | Garante que domain não depende de adapters/frameworks |
+| `SlicesTest` | Verifica ausência de ciclos e independência de adapters |
+| `GeneralCodingRulesTest` | Regras gerais (sem System.out, exceções genéricas, etc) |
+| `NamingConventionTest` | Convenções de nomenclatura |
+| `SpringCodingRulesTest` | Boas práticas Spring (desabilitado como TODO) |
 
 #### Regras Validadas
 
-- **Camadas**: Adapters nao acessam outros adapters diretamente
-- **Domain**: Nao depende de Spring, adapters ou config
-- **Use Cases**: Nao dependem de adapters
-- **Ports**: Nao dependem de adapters
-- **Slices**: Sem dependencias ciclicas
-- **Convencoes**: Classes com sufixos corretos nos pacotes corretos
+- **Camadas**: Adapters não acessam outros adapters diretamente
+- **Domain**: Não depende de Spring, adapters ou config
+- **Use Cases**: Não dependem de adapters
+- **Ports**: Não dependem de adapters
+- **Slices**: Sem dependências cíclicas
+- **Convenções**: Classes com sufixos corretos nos pacotes corretos
 
-## Analise SonarQube
+## Análise SonarQube
 
-### Executar analise local
+### Executar análise local
 
 ```bash
 ./gradlew test jacocoTestReport sonar \
@@ -409,16 +409,16 @@ O projeto utiliza ArchUnit para garantir a integridade da arquitetura hexagonal:
 ### Verificar cobertura local
 
 ```bash
-# Executar testes com verificacao de cobertura
+# Executar testes com verificação de cobertura
 ./gradlew check
 
-# Gerar apenas relatorio de cobertura
+# Gerar apenas relatório de cobertura
 ./gradlew test jacocoTestReport
 ```
 
 O comando `check` executa `jacocoTestCoverageVerification` que valida as regras de cobertura por camada.
 
-## Configuracao
+## Configuração
 
 ### application.yml
 
@@ -450,7 +450,7 @@ plugins {
 
 sonar {
     properties {
-        // Identificacao do projeto
+        // Identificação do projeto
         property "sonar.projectKey", "seu-project-key"
         property "sonar.projectName", "Hexagonal Treinamento"
 
@@ -458,20 +458,20 @@ sonar {
         property "sonar.coverage.jacoco.xmlReportPaths",
                  "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
 
-        // Exclusoes de cobertura (DTOs, configs, mappers)
+        // Exclusões de cobertura (DTOs, configs, mappers)
         property "sonar.coverage.exclusions", [
             "**/config/**", "**/entity/**", "**/request/**",
             "**/response/**", "**/message/**", "**/mapper/**",
             "**/exception/**", "**/*Application.java"
         ].join(",")
 
-        // Exclusoes de duplicacao
+        // Exclusões de duplicação
         property "sonar.cpd.exclusions", [
             "**/entity/**", "**/request/**",
             "**/response/**", "**/message/**"
         ].join(",")
 
-        // Configuracoes Java
+        // Configurações Java
         property "sonar.java.source", "17"
         property "sonar.sourceEncoding", "UTF-8"
     }
@@ -494,7 +494,7 @@ jacocoTestReport {
     }
 }
 
-// Verificacao de cobertura por camada
+// Verificação de cobertura por camada
 jacocoTestCoverageVerification {
     violationRules {
         // Regra global
@@ -530,7 +530,7 @@ tasks.named('check') {
 
 ### Docker Compose
 
-| Servico | Porta | Credenciais |
+| Serviço | Porta | Credenciais |
 |---------|-------|-------------|
 | MongoDB | 27017 | root / example |
 | Mongo Express | 8081 | admin / pass |
@@ -539,21 +539,21 @@ tasks.named('check') {
 
 ## Kafka Topics
 
-| Topico | Descricao |
+| Tópico | Descrição |
 |--------|-----------|
-| `tp-cpf-validation` | Envio de CPF para validacao |
-| `tp-cpf-validated` | Recebimento do resultado da validacao |
+| `tp-cpf-validation` | Envio de CPF para validação |
+| `tp-cpf-validated` | Recebimento do resultado da validação |
 
-### Simular validacao de CPF
+### Simular validação de CPF
 
 ```bash
-# Enviar mensagem para o topico de validacao
+# Enviar mensagem para o tópico de validação
 docker exec -it hexagonal-kafka-1 kafka-console-producer.sh \
   --broker-list localhost:9092 \
   --topic tp-cpf-validated
 
 # Digite a mensagem JSON:
-{"id":"<customer-id>","name":"Joao","cpf":"12345678900","isValidCpf":true,"zipCode":"38400000"}
+{"id":"<customer-id>","name":"João","cpf":"12345678900","isValidCpf":true,"zipCode":"38400000"}
 ```
 
 ## Build
@@ -570,7 +570,7 @@ docker exec -it hexagonal-kafka-1 kafka-console-producer.sh \
 ./gradlew bootJar
 ```
 
-O JAR sera gerado em `build/libs/hexagonal-1.0.0.jar`
+O JAR será gerado em `build/libs/hexagonal-1.0.0.jar`
 
 ### Executar JAR
 
@@ -580,28 +580,28 @@ java -jar build/libs/hexagonal-1.0.0.jar
 
 ## Vantagens da Arquitetura Hexagonal
 
-1. **Organizacao**: Estrutura clara e previsivel
-2. **Flexibilidade**: Facil trocar tecnologias (ex: MongoDB por PostgreSQL)
-3. **Testabilidade**: Core isolado, facil de testar
-4. **Principios SOLID**: SRP e ISP aplicados naturalmente
-5. **Manutencao**: Mudancas isoladas por camada
+1. **Organização**: Estrutura clara e previsível
+2. **Flexibilidade**: Fácil trocar tecnologias (ex: MongoDB por PostgreSQL)
+3. **Testabilidade**: Core isolado, fácil de testar
+4. **Princípios SOLID**: SRP e ISP aplicados naturalmente
+5. **Manutenção**: Mudanças isoladas por camada
 6. **Qualidade**: Testes de arquitetura garantem integridade
 
 ## Desvantagens
 
-1. **Quantidade de codigo**: Mais classes e interfaces que MVC tradicional
+1. **Quantidade de código**: Mais classes e interfaces que MVC tradicional
 2. **Curva de aprendizado**: Requer entendimento dos conceitos
 
-### Padrao de Commits
+### Padrão de Commits
 
 Utilizamos [Conventional Commits](https://www.conventionalcommits.org/):
 
 - `feat:` Nova funcionalidade
-- `fix:` Correcao de bug
-- `docs:` Documentacao
+- `fix:` Correção de bug
+- `docs:` Documentação
 - `test:` Testes
-- `refactor:` Refatoracao
+- `refactor:` Refatoração
 
-## Licenca
+## Licença
 
 Este projeto foi desenvolvido para fins educacionais.
