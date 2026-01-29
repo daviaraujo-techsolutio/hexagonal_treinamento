@@ -7,10 +7,58 @@ plugins {
 }
 
 sonar {
-  properties {
-    property "sonar.projectKey", "daviaraujo-techsolutio_hexagonal_treinamento_AZwEgHrvcbuphuw0hTXh"
-    property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
-  }
+    properties {
+        // === IDENTIFICAÇÃO DO PROJETO ===
+        property "sonar.projectKey", "daviaraujo-techsolutio_hexagonal_treinamento_AZwEgHrvcbuphuw0hTXh"
+        property "sonar.projectName", "Hexagonal Treinamento"
+        property "sonar.projectVersion", version
+
+        // === COBERTURA DE CÓDIGO ===
+        property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+
+        // === EXCLUSÕES DE COBERTURA ===
+        // Classes que não precisam de cobertura de testes (DTOs, configs, gerados)
+        property "sonar.coverage.exclusions", [
+                "**/config/**",
+                "**/entity/**",
+                "**/request/**",
+                "**/response/**",
+                "**/message/**",
+                "**/mapper/**",
+                "**/exception/**",
+                "**/*Application.java"
+        ].join(",")
+
+        // === EXCLUSÕES DE DUPLICAÇÃO ===
+        // DTOs naturalmente têm estruturas similares
+        property "sonar.cpd.exclusions", [
+                "**/entity/**",
+                "**/request/**",
+                "**/response/**",
+                "**/message/**"
+        ].join(",")
+
+        // === EXCLUSÕES GERAIS ===
+        property "sonar.exclusions", [
+                "**/generated/**",
+                "**/build/**"
+        ].join(",")
+
+        // === CONFIGURAÇÕES JAVA ===
+        property "sonar.java.source", "17"
+        property "sonar.sourceEncoding", "UTF-8"
+
+        // === TESTES ===
+        property "sonar.sources", "src/main/java"
+        property "sonar.tests", "src/test/java"
+        property "sonar.test.inclusions", "**/*Test.java"
+
+        // === LINKS DO PROJETO ===
+        property "sonar.links.homepage", "https://github.com/daviaraujo-techsolutio/hexagonal_treinamento"
+        property "sonar.links.scm", "https://github.com/daviaraujo-techsolutio/hexagonal_treinamento"
+        property "sonar.links.issue", "https://github.com/daviaraujo-techsolutio/hexagonal_treinamento/issues"
+        property "sonar.links.ci", "https://github.com/daviaraujo-techsolutio/hexagonal_treinamento/actions"
+    }
 }
 
 group = 'com.davijaf'
@@ -90,10 +138,59 @@ jacocoTestReport {
 
 jacocoTestCoverageVerification {
     violationRules {
+        // Regra global - cobertura mínima geral
         rule {
             limit {
-                minimum = 0.5
+                counter = 'LINE'
+                minimum = 0.60
+            }
+        }
+
+        // Use Cases - cobertura alta obrigatória (core da aplicação)
+        rule {
+            element = 'CLASS'
+            includes = ['com.davijaf.hexagonal.application.core.usecase.*']
+            limit {
+                counter = 'LINE'
+                minimum = 0.80
+            }
+        }
+
+        // Domain - cobertura alta obrigatória (regras de negócio)
+        rule {
+            element = 'CLASS'
+            includes = ['com.davijaf.hexagonal.application.core.domain.*']
+            limit {
+                counter = 'LINE'
+                minimum = 0.80
+            }
+        }
+
+        // Adapters In (Controllers, Consumers) - cobertura moderada
+        rule {
+            element = 'CLASS'
+            includes = ['com.davijaf.hexagonal.adapters.in.**']
+            excludes = ['*Mapper*', '*Response*', '*Request*', '*Message*']
+            limit {
+                counter = 'LINE'
+                minimum = 0.60
+            }
+        }
+
+        // Adapters Out (Repositories, Clients, Producers) - cobertura moderada
+        rule {
+            element = 'CLASS'
+            includes = ['com.davijaf.hexagonal.adapters.out.**']
+            excludes = ['*Mapper*', '*Entity*', '*Response*']
+            limit {
+                counter = 'LINE'
+                minimum = 0.60
             }
         }
     }
+}
+
+// Task para verificar cobertura após os testes
+tasks.named('check') {
+    dependsOn jacocoTestCoverageVerification
 }
