@@ -22,18 +22,71 @@ API de Cliente (CRUD) implementada usando Arquitetura Hexagonal (Ports and Adapt
 
 ## Qualidade de Codigo
 
-O projeto utiliza SonarQube para analise continua de qualidade e JaCoCo para cobertura de testes.
+O projeto utiliza SonarQube para analise continua de qualidade e JaCoCo para cobertura de testes, com configuracoes customizadas para arquitetura hexagonal.
 
-### Metricas
+### Metricas Atuais
 
-| Metrica | Status |
-|---------|--------|
-| Quality Gate | Passed |
-| Bugs | 0 |
-| Vulnerabilities | 0 |
-| Code Smells | 0 |
-| Coverage | ~50% |
-| Duplications | 0.0% |
+| Metrica | Valor | Status |
+|---------|-------|--------|
+| Quality Gate | Hexagonal Clean Code | Passed |
+| Coverage | 76.1% | A |
+| Bugs | 0 | A |
+| Vulnerabilities | 0 | A |
+| Code Smells | 0 | A |
+| Security Hotspots | 0 | A |
+| Duplications | 0.0% | A |
+| Unit Tests | 120 | - |
+
+### Quality Gate - Hexagonal Clean Code
+
+Quality Gate customizado para projetos com arquitetura hexagonal:
+
+| Condicao | Threshold | Descricao |
+|----------|-----------|-----------|
+| Coverage | >= 70% | Cobertura minima de codigo |
+| Duplicated Lines | <= 3% | Maximo de duplicacao |
+| Maintainability Rating | A | Nota de manutenibilidade |
+| Reliability Rating | A | Nota de confiabilidade |
+| Security Rating | A | Nota de seguranca |
+| Security Hotspots Reviewed | 100% | Hotspots revisados |
+| Blocker Issues | 0 | Nenhum issue blocker |
+| Critical Issues | 0 | Nenhum issue critico |
+
+### Quality Profile - Hexagonal Spring Boot
+
+Quality Profile customizado com 487 regras ativas, incluindo regras especificas para:
+
+- **Spring Framework**: Injecao de dependencia, Controllers, Components
+- **Bean Validation**: JSR 380
+- **Exception Handling**: Preservacao de excecoes originais
+- **Security**: Regras OWASP para aplicacoes web
+
+### Cobertura por Camada (JaCoCo)
+
+Configuracao de cobertura diferenciada por camada da arquitetura:
+
+| Camada | Cobertura Minima | Justificativa |
+|--------|------------------|---------------|
+| Use Cases | 80% | Core da aplicacao, regras de negocio |
+| Domain | 80% | Entidades e objetos de valor |
+| Adapters In | 60% | Controllers e Consumers |
+| Adapters Out | 60% | Repositories, Clients, Producers |
+| Global | 60% | Minimo geral do projeto |
+
+### Exclusoes Inteligentes
+
+Classes excluidas da analise de cobertura (nao afetam metricas):
+
+| Tipo | Padrao | Motivo |
+|------|--------|--------|
+| Configuracoes | `**/config/**` | Beans e setup |
+| Entidades | `**/entity/**` | POJOs sem logica |
+| DTOs Request | `**/request/**` | Objetos de transferencia |
+| DTOs Response | `**/response/**` | Objetos de transferencia |
+| Messages | `**/message/**` | DTOs Kafka |
+| Mappers | `**/mapper/**` | Gerados por MapStruct |
+| Exceptions | `**/exception/**` | Classes de excecao |
+| Application | `**/*Application.java` | Classe main |
 
 ### Pipeline CI/CD
 
@@ -353,6 +406,18 @@ O projeto utiliza ArchUnit para garantir a integridade da arquitetura hexagonal:
   -Dsonar.token=SEU_TOKEN
 ```
 
+### Verificar cobertura local
+
+```bash
+# Executar testes com verificacao de cobertura
+./gradlew check
+
+# Gerar apenas relatorio de cobertura
+./gradlew test jacocoTestReport
+```
+
+O comando `check` executa `jacocoTestCoverageVerification` que valida as regras de cobertura por camada.
+
 ## Configuracao
 
 ### application.yml
@@ -385,9 +450,30 @@ plugins {
 
 sonar {
     properties {
+        // Identificacao do projeto
         property "sonar.projectKey", "seu-project-key"
+        property "sonar.projectName", "Hexagonal Treinamento"
+
+        // Cobertura JaCoCo
         property "sonar.coverage.jacoco.xmlReportPaths",
                  "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+
+        // Exclusoes de cobertura (DTOs, configs, mappers)
+        property "sonar.coverage.exclusions", [
+            "**/config/**", "**/entity/**", "**/request/**",
+            "**/response/**", "**/message/**", "**/mapper/**",
+            "**/exception/**", "**/*Application.java"
+        ].join(",")
+
+        // Exclusoes de duplicacao
+        property "sonar.cpd.exclusions", [
+            "**/entity/**", "**/request/**",
+            "**/response/**", "**/message/**"
+        ].join(",")
+
+        // Configuracoes Java
+        property "sonar.java.source", "17"
+        property "sonar.sourceEncoding", "UTF-8"
     }
 }
 
@@ -406,6 +492,39 @@ jacocoTestReport {
         xml.required = true
         html.required = true
     }
+}
+
+// Verificacao de cobertura por camada
+jacocoTestCoverageVerification {
+    violationRules {
+        // Regra global
+        rule {
+            limit { counter = 'LINE'; minimum = 0.60 }
+        }
+        // Use Cases - 80%
+        rule {
+            element = 'CLASS'
+            includes = ['com.davijaf.hexagonal.application.core.usecase.*']
+            limit { counter = 'LINE'; minimum = 0.80 }
+        }
+        // Domain - 80%
+        rule {
+            element = 'CLASS'
+            includes = ['com.davijaf.hexagonal.application.core.domain.*']
+            limit { counter = 'LINE'; minimum = 0.80 }
+        }
+        // Adapters - 60%
+        rule {
+            element = 'CLASS'
+            includes = ['com.davijaf.hexagonal.adapters.**']
+            excludes = ['*Mapper*', '*Entity*', '*Response*', '*Request*']
+            limit { counter = 'LINE'; minimum = 0.60 }
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn jacocoTestCoverageVerification
 }
 ```
 
